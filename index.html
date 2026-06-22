@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPK Metode SMART</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* Optimasi Print Mode (Cetak / Simpan ke PDF) */
+        @media print {
+            body { background-color: white; color: black; }
+            nav, #login-page, .grid, button, .p-3.bg-slate-50.rounded-xl { display: none !important; }
+            #dashboard-page { display: block !important; }
+            #hasil-section { display: block !important; margin: 0; padding: 0; }
+            .bg-white { border: none !important; shadow: none !important; }
+            .rounded-2xl { border-radius: 0 !important; }
+            .shadow-sm, .shadow-xl { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+    <div id="login-page" class="flex items-center justify-center min-h-screen bg-gradient-to-tr from-slate-900 to-indigo-950 p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
+            <div class="text-center mb-8">
+                <div class="inline-flex p-3 bg-indigo-50 text-indigo-600 rounded-xl mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900">Sistem Keputusan SMART</h2>
+                <p class="text-slate-500 text-sm mt-1">Silakan masuk menggunakan akun Anda</p>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Username</label>
+                    <input type="text" id="username" required placeholder="Masukkan username" 
+                        class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Password</label>
+                    <input type="password" id="password" required placeholder="••••••••" 
+                        class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                </div>
+                <div id="login-error" class="hidden text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-100">
+                    Username atau Password salah!
+                </div>
+                <button type="submit" 
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition duration-200">
+                    Masuk ke Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="dashboard-page" class="hidden min-h-screen flex flex-col">
+        <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+            <div class="flex items-center space-x-3">
+                <span class="bg-indigo-600 text-white font-bold p-2 rounded-lg text-sm">SMART</span>
+                <h1 class="text-xl font-bold text-slate-900 hidden sm:block">Dashboard Penunjang Keputusan</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-slate-600 font-medium">Selamat Datang, <strong id="user-display"></strong></span>
+                <button onclick="handleLogout()" class="text-sm text-red-600 hover:text-red-700 font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition">
+                    Keluar
+                </button>
+            </div>
+        </nav>
+
+        <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <span>🎯</span> Kriteria & Bobot
+                    </h3>
+                    <div id="kriteria-list" class="space-y-3 mb-4"></div>
+                    <div class="p-3 bg-slate-50 rounded-xl text-xs text-slate-500">
+                        * Total bobot tidak harus 100, sistem akan melakukan normalisasi secara otomatis.
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span>👥</span> Data Alternatif
+                        </h3>
+                        <button onclick="tambahAlternatifRow()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-sm font-semibold transition">
+                            + Tambah Alternatif
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-100 text-slate-400 text-sm" id="alternatif-header"></tr>
+                            </thead>
+                            <tbody id="alternatif-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="hitungSMART()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-emerald-100 text-lg transition duration-200 w-full sm:w-auto">
+                    🚀 Hitung Keputusan (SMART)
+                </button>
+            </div>
+
+            <div id="hasil-section" class="hidden space-y-8 transition-all">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-100 rounded-xl border border-slate-200 gap-4">
+                    <div>
+                        <h4 class="font-bold text-slate-900">Analisis Selesai Dihitung</h4>
+                        <p class="text-xs text-slate-500">Anda dapat menyimpan laporan hasil kalkulasi keputusan di bawah ini.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <button onclick="eksporCSV()" class="flex-1 sm:flex-initial bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition">
+                            📊 Ekspor Excel/CSV
+                        </button>
+                        <button onclick="window.print()" class="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition">
+                            🖨️ Cetak / Simpan PDF
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="rekomendasi-card" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4"></div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 class="text-md font-bold text-slate-900 mb-3 text-indigo-600">Tahap 1: Normalisasi Bobot Kriteria (w<sub>j</sub>)</h4>
+                    <p class="text-sm text-slate-600 mb-4">Rumus: <code>w<sub>j</sub> = W<sub>j</sub> / ΣW</code> (Nilai bobot kriteria dibagi dengan jumlah total seluruh bobot awal).</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
+                                    <th class="p-3 font-semibold">Kriteria</th>
+                                    <th class="p-3 font-semibold">Sifat</th>
+                                    <th class="p-3 font-semibold">Bobot Awal (W)</th>
+                                    <th class="p-3 font-semibold">Bobot Ternormalisasi (w)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-normalisasi" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 class="text-md font-bold text-slate-900 mb-3 text-indigo-600">Tahap 2: Penentuan Parameter Batas Nilai Kriteria (C<sub>max</sub> & C<sub>min</sub>)</h4>
+                    <p class="text-sm text-slate-600 mb-4">Mencari nilai tertinggi (Max) dan nilai terendah (Min) dari seluruh alternatif yang ada pada masing-masing kriteria.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
+                                    <th class="p-3 font-semibold">Kriteria</th>
+                                    <th class="p-3 font-semibold text-center text-emerald-600">Nilai Maksimal (C<sub>max</sub>)</th>
+                                    <th class="p-3 font-semibold text-center text-red-600">Nilai Minimal (C<sub>min</sub>)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-parameter" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 class="text-md font-bold text-slate-900 mb-3 text-indigo-600">Tahap 3: Menghitung Nilai Utilitas / Utility (u<sub>ij</sub>)</h4>
+                    <p class="text-sm text-slate-600 mb-2">Mengonversi nilai asli alternatif ke skala utility 0 sampai 1 menggunakan rumus tren kriteria:</p>
+                    <ul class="text-xs text-slate-500 list-disc pl-5 mb-4 space-y-1">
+                        <li><strong>Benefit (Keuntungan):</strong> <code>(C<sub>ij</sub> - C<sub>min</sub>) / (C<sub>max</sub> - C<sub>min</sub>)</code></li>
+                        <li><strong>Cost (Biaya):</strong> <code>(C<sub>max</sub> - C<sub>ij</sub>) / (C<sub>max</sub> - C<sub>min</sub>)</code></li>
+                    </ul>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200" id="utility-header"></tr>
+                            </thead>
+                            <tbody id="table-utility" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 class="text-md font-bold text-slate-900 mb-3 text-indigo-600">Tahap 4: Perhitungan Nilai Akhir (V<sub>i</sub>) & Ranking</h4>
+                    <p class="text-sm text-slate-600 mb-4">Rumus: <code>V<sub>i</sub> = Σ(w<sub>j</sub> × u<sub>ij</sub>)</code> (Penjumlahan total hasil kali bobot kriteria ternormalisasi dengan nilai utilitas alternatif).</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
+                                    <th class="p-3 font-semibold w-16 text-center">Rank</th>
+                                    <th class="p-3 font-semibold">Nama Alternatif</th>
+                                    <th class="p-3 font-semibold text-right">Total Nilai Akhir (V)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-ranking" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Data Global State
+        let kriteria = [
+            { id: 'C1', nama: 'Kualitas', bobot: 40, tipe: 'benefit' },
+            { id: 'C2', nama: 'Harga', bobot: 30, tipe: 'cost' },
+            { id: 'C3', nama: 'Pelayanan', bobot: 30, tipe: 'benefit' }
+        ];
+
+        let alternatif = [
+            { id: 'A1', nama: 'Vendor A', nilai: { C1: 80, C2: 200000, C3: 75 } },
+            { id: 'A2', nama: 'Vendor B', nilai: { C1: 90, C2: 250000, C3: 80 } },
+            { id: 'A3', nama: 'Vendor C', nilai: { C1: 75, C2: 150000, C3: 85 } }
+        ];
+
+        let cacheHasilGlobal = []; // Menyimpan data sementara untuk fungsi ekspor CSV
+
+        // --- AUTHENTICATION ---
+        function handleLogin(event) {
+            event.preventDefault();
+            const userIn = document.getElementById('username').value;
+            const passIn = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            if (userIn === 'septina' && passIn === 'septinaspkbisa') {
+                errorDiv.classList.add('hidden');
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('dashboard-page').classList.remove('hidden');
+                document.getElementById('user-display').innerText = userIn;
+                initDashboardInputs();
+            } else {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            document.getElementById('dashboard-page').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('password').value = '';
+            document.getElementById('hasil-section').classList.add('hidden');
+        }
+
+        // --- RENDER COMPONENT DYNAMICS ---
+        function initDashboardInputs() {
+            const kriteriaList = document.getElementById('kriteria-list');
+            kriteriaList.innerHTML = kriteria.map((c, idx) => `
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-sm text-indigo-600">${c.id} - ${c.nama}</span>
+                        <span class="text-xs uppercase px-2 py-0.5 rounded font-semibold ${c.tipe === 'benefit' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${c.tipe}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="number" value="${c.bobot}" onchange="updateBobot(${idx}, this.value)" 
+                            class="w-full bg-white px-2 py-1 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                </div>
+            `).join('');
+
+            const header = document.getElementById('alternatif-header');
+            header.innerHTML = `
+                <th class="p-3 font-semibold text-slate-700">Nama Alternatif</th>
+                ${kriteria.map(c => `<th class="p-3 font-semibold text-slate-700">${c.nama} (${c.id})</th>`).join('')}
+                <th class="p-3 font-semibold text-slate-700 text-center w-20">Aksi</th>
+            `;
+
+            renderAlternatifRows();
+        }
+
+        function renderAlternatifRows() {
+            const tbody = document.getElementById('alternatif-body');
+            tbody.innerHTML = alternatif.map((alt, aIdx) => `
+                <tr class="hover:bg-slate-50/80 transition">
+                    <td class="p-3">
+                        <input type="text" value="${alt.nama}" onchange="alternatif[${aIdx}].nama = this.value"
+                            class="bg-transparent font-medium text-slate-800 focus:bg-white px-2 py-1 rounded border border-transparent focus:border-slate-200 focus:outline-none w-full">
+                    </td>
+                    ${kriteria.map(c => `
+                        <td class="p-3">
+                            <input type="number" value="${alt.nilai[c.id] || 0}" onchange="updateNilaiAlternatif(${aIdx}, '${c.id}', this.value)"
+                                class="w-full bg-transparent focus:bg-white px-2 py-1 rounded border border-transparent focus:border-slate-200 focus:outline-none">
+                        </td>
+                    `).join('')}
+                    <td class="p-3 text-center">
+                        <button onclick="hapusAlternatif(${aIdx})" class="text-red-500 hover:text-red-700 text-xs font-semibold">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateBobot(idx, val) { kriteria[idx].bobot = parseFloat(val) || 0; }
+        function updateNilaiAlternatif(altIdx, critId, val) { alternatif[altIdx].nilai[critId] = parseFloat(val) || 0; }
+
+        function tambahAlternatifRow() {
+            const nextId = 'A' + (alternatif.length + 1);
+            let nilaiAwal = {};
+            kriteria.forEach(c => nilaiAwal[c.id] = 0);
+            alternatif.push({ id: nextId, nama: 'Alternatif Baru', nilai: nilaiAwal });
+            renderAlternatifRows();
+        }
+
+        function hapusAlternatif(idx) {
+            if (alternatif.length > 1) {
+                alternatif.splice(idx, 1);
+                renderAlternatifRows();
+            } else {
+                alert('Minimal harus menyisakan 1 alternatif!');
+            }
+        }
+
+        // --- MATH ENGINE METODE SMART ---
+        function hitungSMART() {
+            if (alternatif.length === 0) return;
+
+            // 1. Tahap Normalisasi Bobot Kriteria
+            const totalBobotAwal = kriteria.reduce((sum, c) => sum + c.bobot, 0);
+            const kriteriaTernormalisasi = kriteria.map(c => ({
+                ...c,
+                w: totalBobotAwal > 0 ? (c.bobot / totalBobotAwal) : 0
+            }));
+
+            // 2. Tahap Identifikasi Batas Cmax & Cmin
+            let minMax = {};
+            kriteria.forEach(c => {
+                const nilaiSemua = alternatif.map(alt => alt.nilai[c.id] || 0);
+                minMax[c.id] = {
+                    max: Math.max(...nilaiSemua),
+                    min: Math.min(...nilaiSemua)
+                };
+            });
+
+            // 3. Hitung Nilai Utility (u) dan Perhitungan Nilai Akhir (V)
+            let hasilAkhir = alternatif.map(alt => {
+                let utilityValues = {};
+                let totalV = 0;
+
+                kriteriaTernormalisasi.forEach(c => {
+                    const val = alt.nilai[c.id] || 0;
+                    const max = minMax[c.id].max;
+                    const min = minMax[c.id].min;
+                    
+                    let u = 0;
+                    if (max !== min) {
+                        if (c.tipe === 'benefit') {
+                            u = (val - min) / (max - min);
+                        } else { 
+                            u = (max - val) / (max - min);
+                        }
+                    } else {
+                        u = 1; 
+                    }
+
+                    utilityValues[c.id] = u;
+                    totalV += (c.w * u);
+                });
+
+                return {
+                    ...alt,
+                    utility: utilityValues,
+                    nilaiAkhir: totalV
+                };
+            });
+
+            // 4. Perangkingan dari Nilai Terbesar
+            const hasilRangking = [...hasilAkhir].sort((a, b) => b.nilaiAkhir - a.nilaiAkhir);
+            cacheHasilGlobal = hasilRangking; // Simpan hasil kalkulasi ke cache global
+
+            // Render Output Visual
+            renderTabelHasil(kriteriaTernormalisasi, minMax, hasilRangking);
+        }
+
+        // --- RENDER DATA KE VIEW TABEL ---
+        function renderTabelHasil(kriteriaTernormalisasi, minMax, hasilRangking) {
+            document.getElementById('hasil-section').classList.remove('hidden');
+
+            // Render Banner Rekomendasi
+            const pemenang = hasilRangking[0];
+            document.getElementById('rekomendasi-card').innerHTML = `
+                <div>
+                    <span class="bg-white/20 text-xs uppercase px-2.5 py-1 rounded-full font-bold tracking-wider">Rekomendasi Terbaik</span>
+                    <h2 class="text-3xl font-extrabold mt-1">${pemenang.nama}</h2>
+                    <p class="text-emerald-100 text-sm mt-1">Alternatif dengan nilai efisiensi utilitas tertinggi berdasarkan bobot keputusan.</p>
+                </div>
+                <div class="text-right sm:text-center bg-white text-emerald-800 py-3 px-6 rounded-xl shadow-inner">
+                    <span class="block text-xs font-semibold uppercase tracking-wide text-emerald-600">Nilai Akhir V</span>
+                    <span class="text-3xl font-black">${pemenang.nilaiAkhir.toFixed(4)}</span>
+                </div>
+            `;
+
+            // Render Tabel Tahap 1: Normalisasi
+            document.getElementById('table-normalisasi').innerHTML = kriteriaTernormalisasi.map(c => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-semibold text-slate-700">${c.nama} (${c.id})</td>
+                    <td class="p-3 uppercase"><span class="text-xs font-bold px-2 py-0.5 rounded ${c.tipe === 'benefit' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'}">${c.tipe}</span></td>
+                    <td class="p-3 text-slate-600">${c.bobot}</td>
+                    <td class="p-3 font-bold text-indigo-600">${c.w.toFixed(4)}</td>
+                </tr>
+            `).join('');
+
+            // Render Tabel Tahap 2: Parameter Nilai Batas Cmax & Cmin (TAMBAHAN BARU)
+            document.getElementById('table-parameter').innerHTML = kriteriaTernormalisasi.map(c => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-semibold text-slate-700">${c.nama} (${c.id})</td>
+                    <td class="p-3 text-center text-emerald-700 font-medium">${minMax[c.id].max}</td>
+                    <td class="p-3 text-center text-red-700 font-medium">${minMax[c.id].min}</td>
+                </tr>
+            `).join('');
+
+            // Render Tabel Tahap 3: Utility
+            const utilityHeader = document.getElementById('utility-header');
+            utilityHeader.innerHTML = `
+                <th class="p-3 font-semibold">Alternatif</th>
+                ${kriteriaTernormalisasi.map(c => `<th class="p-3 font-semibold">${c.nama} (${c.id})</th>`).join('')}
+            `;
+
+            document.getElementById('table-utility').innerHTML = hasilRangking.map(alt => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-medium text-slate-800">${alt.nama}</td>
+                    ${kriteriaTernormalisasi.map(c => `
+                        <td class="p-3">
+                            <span class="text-slate-700 font-medium">${alt.utility[c.id].toFixed(4)}</span>
+                            <span class="block text-[10px] text-slate-400">Asli: ${alt.nilai[c.id]}</span>
+                        </td>
+                    `).join('')}
+                </tr>
+            `).join('');
+
+            // Render Tabel Tahap 4: Ranking
+            document.getElementById('table-ranking').innerHTML = hasilRangking.map((alt, idx) => `
+                <tr class="${idx === 0 ? 'bg-emerald-50/60 font-semibold' : 'hover:bg-slate-50'} transition">
+                    <td class="p-3 text-center">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${idx === 0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}">
+                            ${idx + 1}
+                        </span>
+                    </td>
+                    <td class="p-3 text-slate-800">${alt.nama} ${idx === 0 ? '🏆' : ''}</td>
+                    <td class="p-3 text-right font-bold text-lg ${idx === 0 ? 'text-emerald-700' : 'text-slate-700'}">${alt.nilaiAkhir.toFixed(4)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('hasil-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- MANAJEMEN DATA EKSPOR CSV ---
+        function eksporCSV() {
+            if (cacheHasilGlobal.length === 0) {
+                alert("Silakan tekan tombol 'Hitung Keputusan' terlebih dahulu sebelum mengekspor data.");
+                return;
+            }
+
+            // Membuat Baris Header CSV
+            let barisCSV = [["Peringkat", "Nama Alternatif", "Nilai Akhir Total (V)"].join(",")];
+            
+            // Mengisi Data Alternatif Berdasarkan Hasil Urutan
+            cacheHasilGlobal.forEach((alt, indeks) => {
+                let barisData = [
+                    indeks + 1,
+                    `"${alt.nama}"`,
+                    alt.nilaiAkhir.toFixed(4)
+                ];
+                barisCSV.push(barisData.join(","));
+            });
+
+            // Pembuatan Konten Berkas Blob CSV
+            let isiCSV = "data:text/csv;charset=utf-8," + barisCSV.join("\n");
+            let encodedUri = encodeURI(isiCSV);
+            let linkUnduh = document.createElement("a");
+            
+            linkUnduh.setAttribute("href", encodedUri);
+            linkUnduh.setAttribute("download", "Laporan_Ranking_SMART.csv");
+            document.body.appendChild(linkUnduh);
+            
+            linkUnduh.click(); // Trigger download berkas otomatis ke komputer pengguna
+            document.body.removeChild(linkUnduh);
+        }
+    </script>
+</body>
+</html>
