@@ -31,7 +31,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-900">Sistem Keputusan SMART</h2>
+                <h2 class="text-2xl font-bold text-slate-900">Distributor Obat</h2>
                 <p class="text-slate-500 text-sm mt-1">Silakan masuk menggunakan akun Anda</p>
             </div>
 
@@ -62,7 +62,7 @@
         <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
             <div class="flex items-center space-x-3">
                 <span class="bg-indigo-600 text-white font-bold p-2 rounded-lg text-sm">SMART</span>
-                <h1 class="text-xl font-bold text-slate-900 hidden sm:block">Dashboard Penunjang Keputusan</h1>
+                <h1 class="text-xl font-bold text-slate-900 hidden sm:block">Dashboard Distributor Obat</h1>
             </div>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-slate-600 font-medium">Selamat Datang, <strong id="user-display"></strong></span>
@@ -113,23 +113,6 @@
 
             <div id="hasil-section" class="hidden space-y-8 transition-all">
                 
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-100 rounded-xl border border-slate-200 gap-4">
-                    <div>
-                        <h4 class="font-bold text-slate-900">Analisis Selesai Dihitung</h4>
-                        <p class="text-xs text-slate-500">Anda dapat menyimpan laporan hasil kalkulasi keputusan di bawah ini.</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                        <button onclick="eksporCSV()" class="flex-1 sm:flex-initial bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition">
-                            📊 Ekspor Excel/CSV
-                        </button>
-                        <button onclick="window.print()" class="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition">
-                            🖨️ Cetak / Simpan PDF
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="rekomendasi-card" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4"></div>
-
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <h4 class="text-md font-bold text-slate-900 mb-3 text-indigo-600">Tahap 1: Normalisasi Bobot Kriteria (w<sub>j</sub>)</h4>
                     <p class="text-sm text-slate-600 mb-4">Rumus: <code>w<sub>j</sub> = W<sub>j</sub> / ΣW</code> (Nilai bobot kriteria dibagi dengan jumlah total seluruh bobot awal).</p>
@@ -199,6 +182,23 @@
                     </div>
                 </div>
 
+                <div id="rekomendasi-card" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4"></div>
+
+                <div id="analisis-footer-bar" class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-100 rounded-xl border border-slate-200 gap-4">
+                    <div>
+                        <h4 class="font-bold text-slate-900">Analisis Selesai Dihitung</h4>
+                        <p class="text-xs text-slate-500">Anda dapat menyimpan laporan hasil kalkulasi keputusan di bawah ini.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <button onclick="eksporCSV()" class="flex-1 sm:flex-initial bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition">
+                            📊 Ekspor Excel/CSV
+                        </button>
+                        <button onclick="window.print()" class="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition">
+                            🖨️ Cetak / Simpan PDF
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
@@ -212,12 +212,12 @@
         ];
 
         let alternatif = [
-            { id: 'A1', nama: 'Vendor A', nilai: { C1: 80, C2: 200000, C3: 75 } },
-            { id: 'A2', nama: 'Vendor B', nilai: { C1: 90, C2: 250000, C3: 80 } },
-            { id: 'A3', nama: 'Vendor C', nilai: { C1: 75, C2: 150000, C3: 85 } }
+            { id: 'A1', nama: 'Kimia Farma', nilai: { C1: 80, C2: 200000, C3: 75 } },
+            { id: 'A2', nama: 'Bio Farma', nilai: { C1: 90, C2: 250000, C3: 80 } },
+            { id: 'A3', nama: 'Kalbe Farma', nilai: { C1: 75, C2: 150000, C3: 85 } }
         ];
 
-        let cacheHasilGlobal = []; // Menyimpan data sementara untuk fungsi ekspor CSV
+        let cacheHasilGlobal = []; 
 
         // --- AUTHENTICATION ---
         function handleLogin(event) {
@@ -366,7 +366,7 @@
 
             // 4. Perangkingan dari Nilai Terbesar
             const hasilRangking = [...hasilAkhir].sort((a, b) => b.nilaiAkhir - a.nilaiAkhir);
-            cacheHasilGlobal = hasilRangking; // Simpan hasil kalkulasi ke cache global
+            cacheHasilGlobal = hasilRangking;
 
             // Render Output Visual
             renderTabelHasil(kriteriaTernormalisasi, minMax, hasilRangking);
@@ -400,7 +400,7 @@
                 </tr>
             `).join('');
 
-            // Render Tabel Tahap 2: Parameter Nilai Batas Cmax & Cmin (TAMBAHAN BARU)
+            // Render Tabel Tahap 2: Parameter Nilai Batas Cmax & Cmin
             document.getElementById('table-parameter').innerHTML = kriteriaTernormalisasi.map(c => `
                 <tr class="hover:bg-slate-50">
                     <td class="p-3 font-semibold text-slate-700">${c.nama} (${c.id})</td>
@@ -441,7 +441,8 @@
                 </tr>
             `).join('');
 
-            document.getElementById('hasil-section').scrollIntoView({ behavior: 'smooth' });
+            // Scroll otomatis diarahkan ke bar aksi ekspor/cetak di paling bawah agar langsung terlihat
+            document.getElementById('analisis-footer-bar').scrollIntoView({ behavior: 'smooth' });
         }
 
         // --- MANAJEMEN DATA EKSPOR CSV ---
@@ -451,10 +452,8 @@
                 return;
             }
 
-            // Membuat Baris Header CSV
             let barisCSV = [["Peringkat", "Nama Alternatif", "Nilai Akhir Total (V)"].join(",")];
             
-            // Mengisi Data Alternatif Berdasarkan Hasil Urutan
             cacheHasilGlobal.forEach((alt, indeks) => {
                 let barisData = [
                     indeks + 1,
@@ -464,7 +463,6 @@
                 barisCSV.push(barisData.join(","));
             });
 
-            // Pembuatan Konten Berkas Blob CSV
             let isiCSV = "data:text/csv;charset=utf-8," + barisCSV.join("\n");
             let encodedUri = encodeURI(isiCSV);
             let linkUnduh = document.createElement("a");
@@ -473,7 +471,7 @@
             linkUnduh.setAttribute("download", "Laporan_Ranking_SMART.csv");
             document.body.appendChild(linkUnduh);
             
-            linkUnduh.click(); // Trigger download berkas otomatis ke komputer pengguna
+            linkUnduh.click(); 
             document.body.removeChild(linkUnduh);
         }
     </script>
